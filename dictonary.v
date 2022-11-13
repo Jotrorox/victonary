@@ -3,12 +3,21 @@ module main
 import sqlite
 import os
 
+[table: 'words']
+struct Word {
+	id  int    [primary; sql: serial]
+	eng string [nonull]
+	ger string [nonull]
+}
+
 fn main() {
 		mut db := sqlite.connect('data.db') ! defer {
 		db.close() or { panic(err) }
 	}
 
-	db.exec('CREATE TABLE IF NOT EXISTS words (id INTEGER PRIMARY KEY, eng TEXT, ger INTEGER)')
+	sql db {
+		create table Word
+	}
 
 	menu(mut db)
 }
@@ -37,8 +46,10 @@ fn add_word(mut db sqlite.DB) {
 	print("German: ")
 	ger := os.input('')
 
-	println('INSERT INTO words (eng, ger) VALUES ($eng, $ger)')
-	db.exec('INSERT INTO words (eng, ger) VALUES ({eng}, {ger})')
+	new_word := Word{eng: eng, ger: ger}
+	sql db {
+		insert new_word into Word
+	}
 }
 
 fn list_menu(mut db sqlite.DB) {
